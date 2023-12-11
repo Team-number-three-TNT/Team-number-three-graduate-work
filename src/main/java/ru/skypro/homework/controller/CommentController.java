@@ -3,10 +3,12 @@ package ru.skypro.homework.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.skypro.homework.dto.CommentDTO;
+import ru.skypro.homework.dto.CommentsDTO;
 import ru.skypro.homework.dto.CreateOrUpdateCommentDTO;
 import ru.skypro.homework.service.CommentService;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,7 +18,7 @@ public class CommentController {
 
     @GetMapping("/{id}/comments")
     public ResponseEntity<?> getCommentsForAd(@PathVariable int id) {
-        ArrayList<CommentsDTO> results = commentService.getCommentsForAd(id);
+        List<CommentsDTO> results = commentService.getCommentsForAd(id);
         if (results.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

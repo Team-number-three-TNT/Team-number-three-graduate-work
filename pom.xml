@@ -21,8 +21,6 @@
         <java.version>11</java.version>
     </properties>
 
-
-
     <dependencies>
         <!--suppress VulnerableLibrariesLocal -->
         <dependency>
@@ -68,7 +66,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 
     <build>
         <plugins>
