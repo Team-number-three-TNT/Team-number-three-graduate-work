@@ -1,8 +1,12 @@
 package ru.skypro.homework.service.impl;
 
 import org.springframework.stereotype.Service;
+import ru.skypro.homework.dto.CommentDTO;
+import ru.skypro.homework.dto.CommentsDTO;
 import ru.skypro.homework.dto.CreateOrUpdateCommentDTO;
 import ru.skypro.homework.service.CommentService;
+
+import java.util.List;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -12,7 +16,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDTO addCommentForAd(int adId, CreateOrUpdateCommentDTO createOrUpdateCommentDTO) {
+    public CommentDTO addCommentToAd(int adId, CreateOrUpdateCommentDTO createOrUpdateCommentDTO) {
         return null;
     }
 
