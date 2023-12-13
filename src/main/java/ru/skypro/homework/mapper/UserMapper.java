@@ -1,36 +1,24 @@
 package ru.skypro.homework.mapper;
 
-import lombok.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.*;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.User;
 
 @Component
 public class UserMapper {
-    public UserDTO toDTO(@NonNull User user) {
-        UserDTO userDTO = new UserDTO();
+    private final ModelMapper modelMapper;
 
-        userDTO.setId(user.getId());
-        userDTO.setEmail(user.getEmail());
-        userDTO.setFirstName(user.getFirstName());
-        userDTO.setLastName(user.getLastName());
-        userDTO.setPhone(user.getPhone());
-        userDTO.setRole(user.getRole());
+    public UserMapper(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
 
-        return userDTO;
+    public UserDTO toDTO(User user) {
+        return modelMapper.map(user, UserDTO.class);
     }
 
     public User toEntity(UserDTO userDto) {
-        User user = new User();
-
-        user.setFirstName(userDto.getFirstName());
-        user.setLastName(userDto.getLastName());
-        user.setEmail(userDto.getEmail());
-        user.setImage(userDto.getImage());
-        user.setPhone(userDto.getPhone());
-        user.setRole(userDto.getRole());
-
-        return user;
+        return modelMapper.map(userDto, User.class);
     }
 
 }
