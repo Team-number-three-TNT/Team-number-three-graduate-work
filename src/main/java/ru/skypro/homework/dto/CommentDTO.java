@@ -2,6 +2,9 @@ package ru.skypro.homework.dto;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 @Data
 public class CommentDTO {
     //authorId
@@ -11,6 +14,8 @@ public class CommentDTO {
     private Integer createdAt;
     //id for comment
     private Integer pk;
+
+    @NotEmpty
     private String text;
 
 }
