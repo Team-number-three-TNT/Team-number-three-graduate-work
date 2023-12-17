@@ -10,7 +10,7 @@ public class CommentDTO {
     private Integer author;
     private String authorImage;
     private String authorFirstName;
-    private Integer createdAt;
+    private Long createdAt;
     //id for comment
     private Integer pk;
 
