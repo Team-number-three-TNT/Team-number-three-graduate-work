@@ -1,6 +1,7 @@
 package ru.skypro.homework.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -8,11 +9,13 @@ import javax.persistence.*;
 @Entity
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "comments")
 public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     public Integer id;
 
     public String authorImage;
@@ -28,7 +31,6 @@ public class Comment {
      * Id объявления, к которому относится данный комментарий.
      * Комментарий может быть опубликован только один раз и к одному объявлению.
      */
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "adId", referencedColumnName = "id")
     public Ad ad;
@@ -36,7 +38,6 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
 
     public String text;
 }

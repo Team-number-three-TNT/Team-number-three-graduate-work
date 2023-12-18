@@ -1,25 +1,25 @@
 package ru.skypro.homework.dto;
 
 
-    import lombok.Data;
+import lombok.Data;
 
-    @Data
-    public class UserDTO {
+@Data
+public class UserDTO {
 
-        private Integer id;
+    private Integer id;
 
-        private String email;
+    private String email;
 
-        private String firstName;
+    private String firstName;
 
-        private String lastName;
+    private String lastName;
 
-        private String phone;
+    private String phone;
 
-        private Role role;
+    private Role role;
 
-        /**
-         * Ссылка на аватар пользователя
-         */
-        private String image;
+    /**
+     * Ссылка на аватар пользователя
+     */
+    private String image;
 }
