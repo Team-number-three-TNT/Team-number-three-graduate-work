@@ -12,7 +12,7 @@ CREATE TABLE users (
     image BYTEA
 );
 
--- changeset beshik7:6
+-- changeset beshik7:6.1
 CREATE TABLE ads (
     id SERIAL PRIMARY KEY,
     author_id INTEGER NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE ads (
     FOREIGN KEY (author_id) REFERENCES users(id)
 );
 
--- changeset beshik7:6
+-- changeset beshik7:6.2
 CREATE TABLE comments (
     id SERIAL PRIMARY KEY,
     ad_id INTEGER NOT NULL,
