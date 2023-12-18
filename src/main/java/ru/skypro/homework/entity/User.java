@@ -1,5 +1,6 @@
 package ru.skypro.homework.entity;
 
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -48,6 +49,5 @@ import java.util.Set;
 
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
         private Set<Comment> comments = new HashSet<>();
-
 
 }
