@@ -28,9 +28,15 @@ public class Comment {
      * Id объявления, к которому относится данный комментарий.
      * Комментарий может быть опубликован только один раз и к одному объявлению.
      */
-    @OneToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "adId", referencedColumnName = "id")
     public Ad ad;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
 
     public String text;
 }
