@@ -3,14 +3,10 @@ package ru.skypro.homework.mapper;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
-
 import ru.skypro.homework.dto.*;
 import ru.skypro.homework.entity.Ad;
-
 import ru.skypro.homework.entity.Comment;
 import ru.skypro.homework.entity.User;
-
-
 
 @Component
 @RequiredArgsConstructor
@@ -33,7 +29,6 @@ public class Mapper {
         return modelMapper.map(commentDTO, Comment.class);
     }
 
-
     public AdDTO toAdDTO(Ad ad) {
         return modelMapper.map(ad, AdDTO.class);
     }
@@ -45,6 +40,4 @@ public class Mapper {
     public ExtendedAdDTO toExtendedAdDTO(Ad ad) {
         return modelMapper.map(ad, ExtendedAdDTO.class);
     }
-
 }
-
