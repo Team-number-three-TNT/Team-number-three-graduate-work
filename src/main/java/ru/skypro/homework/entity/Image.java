@@ -37,6 +37,11 @@ public class Image {
     private String mediaType;
 
     /**
+     * Само изображение, хранимое в массиве байтов
+     */
+    private byte[] imageFile;
+
+    /**
      * Id объявления, к которому относится изображение.
      * <p>
      * Может быть null.
