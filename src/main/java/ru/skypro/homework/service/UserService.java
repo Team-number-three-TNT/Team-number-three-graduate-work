@@ -5,12 +5,17 @@ import ru.skypro.homework.dto.NewPasswordDTO;
 import ru.skypro.homework.dto.UpdateUserDTO;
 import ru.skypro.homework.dto.UserDTO;
 
+import java.io.IOException;
+
 public interface UserService {
-    void setPassword(NewPasswordDTO newPasswordDTO);
 
-    UserDTO getInfo();
+    UserDTO getAuthorizedUser();
 
-    UpdateUserDTO updateUser(UpdateUserDTO updateUserDTO);
+    boolean updatePassword(String email, String currentPassword, String newPassword);
 
-    void updateUserImage(MultipartFile newImage);
+    byte[] getAvatar(String fileName) throws IOException;
+
+    UpdateUserDTO updateUser(UpdateUserDTO updateUser);
+
+    String updateAvatar(MultipartFile file);
 }
