@@ -10,6 +10,8 @@ import ru.skypro.homework.entity.Ad;
 import ru.skypro.homework.entity.Comment;
 import ru.skypro.homework.entity.User;
 
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -31,6 +33,13 @@ public class Mapper {
 
     public Comment toComment(CommentDTO commentDTO) {
         return modelMapper.map(commentDTO, Comment.class);
+    }
+
+    public CommentsDTO toCommentsDTO(List<Comment> comments) {
+        CommentsDTO commentsDTO = new CommentsDTO();
+        commentsDTO.setCount(comments.size());
+        commentsDTO.setResults(comments.stream().map(e -> toCommentDTO(e)).collect(Collectors.toList()));
+        return commentsDTO;
     }
 
 
