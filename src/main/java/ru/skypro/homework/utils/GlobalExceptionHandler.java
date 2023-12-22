@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import ru.skypro.homework.exception.AdNotFoundException;
 import ru.skypro.homework.exception.CommentNotFoundException;
 
 @ControllerAdvice
@@ -12,8 +13,14 @@ import ru.skypro.homework.exception.CommentNotFoundException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(CommentNotFoundException.class)
-    public ResponseEntity<String> handleCommentDoesntExistException(Exception e) {
+    public ResponseEntity<String> handleCommentNotFoundException(Exception e) {
         log.warn(e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(AdNotFoundException.class)
+    public ResponseEntity<String> handleAdNotFoundException(Exception e) {
+        log.warn(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 }
