@@ -18,10 +18,6 @@ public class Comment {
     @EqualsAndHashCode.Include
     public Integer id;
 
-    public String authorImage;
-
-    public String authorFirstName;
-
     /**
      * Дата и время создания комментария в миллисекундах с 00:00:00 01.01.1970
      */
@@ -30,14 +26,22 @@ public class Comment {
     /**
      * Id объявления, к которому относится данный комментарий.
      * Комментарий может быть опубликован только один раз и к одному объявлению.
+     * @see Ad
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "adId", referencedColumnName = "id")
+    @JoinColumn(name = "ad_id", referencedColumnName = "id")
     public Ad ad;
 
+    /**
+     * Id пользователя, который отправил данный комментария
+     * @see User
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
+    /**
+     * Текст комментария
+     */
     public String text;
 }
