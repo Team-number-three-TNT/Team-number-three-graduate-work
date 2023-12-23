@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 import ru.skypro.homework.dto.CommentDTO;
 import ru.skypro.homework.dto.CommentsDTO;
 import ru.skypro.homework.dto.CreateOrUpdateCommentDTO;
+import ru.skypro.homework.dto.Role;
 import ru.skypro.homework.entity.Comment;
 import ru.skypro.homework.entity.User;
 import ru.skypro.homework.exception.AdNotFoundException;
 import ru.skypro.homework.exception.CommentNotFoundException;
+import ru.skypro.homework.exception.UserNotAuthorizedException;
 import ru.skypro.homework.exception.UserNotFoundException;
 import ru.skypro.homework.mapper.Mapper;
 import ru.skypro.homework.repository.AdRepository;
@@ -30,6 +32,7 @@ public class CommentServiceImpl implements CommentService {
 
     /**
      * Возвращет все комментарии для конкретного объявления
+     *
      * @param adId Id объявления
      * @return CommentsDTO
      * @see CommentsDTO
@@ -41,7 +44,8 @@ public class CommentServiceImpl implements CommentService {
 
     /**
      * Добавление нового комментария к объявлению
-     * @param adId Id объявления
+     *
+     * @param adId                     Id объявления
      * @param createOrUpdateCommentDTO DTO объект, представляющий новый комментарий
      * @return CommentDTO нового комментария
      * @throws AdNotFoundException, если объявления с переданным Id не существует
@@ -59,37 +63,49 @@ public class CommentServiceImpl implements CommentService {
 
     /**
      * Удаление ранее опубликованного комментария, принадлежащего текущему пользователю
-     * @param adId Id объявления
+     *
+     * @param adId      Id объявления
      * @param commentId Id комменатрия
-     * @throws CommentNotFoundException, если комментария с переданным Id не существует
+     * @throws CommentNotFoundException   если комментария с переданным Id не существует
+     * @throws UserNotAuthorizedException если пользователь не является автором комментария и не админ
      */
     @Override
     public void deleteComment(int adId, int commentId) {
-        //проверка, что комментария принадлежит данному пользователю
-        commentRepository.delete(findByCommentId(commentId));
+        if (isCurrentUserAuthorized(commentId)) {
+            commentRepository.delete(findByCommentId(commentId));
+        } else {
+            throw new UserNotAuthorizedException("У пользователя c id: " + getCurrentUser().getId() +
+                    " недостаточно прав для удаления комментария: " + commentId);
+        }
     }
 
     /**
      * Обновление текста комментария пользователя
-     * @param adId id объявления, к которому был опубликован комментарий
-     * @param commentId id комментария
+     *
+     * @param adId                     id объявления, к которому был опубликован комментарий
+     * @param commentId                id комментария
      * @param createOrUpdateCommentDTO DTO объект, представляющий обновленный комментарий
      * @return обновленный CommentDTO
-     * @throws CommentNotFoundException, если комментария с переданным Id не существует
+     * @throws CommentNotFoundException   если комментария с переданным Id не существует
+     * @throws UserNotAuthorizedException если пользователь не является автором комментария и не админ
      */
     @Override
     public CommentDTO updateCommentText(int adId,
                                         int commentId,
                                         CreateOrUpdateCommentDTO createOrUpdateCommentDTO) {
-        //проверка, что комментария принадлежит данному пользователю
-        Comment commentToUpdate = findByCommentId(commentId);
-        commentToUpdate.setText(createOrUpdateCommentDTO.getText());
-        commentToUpdate.setCreatedAt(System.currentTimeMillis());
-        return mapper.toCommentDTO(commentRepository.save(commentToUpdate));
+        if (isCurrentUserAuthorized(commentId)) {
+            Comment commentToUpdate = findByCommentId(commentId);
+            commentToUpdate.setText(createOrUpdateCommentDTO.getText());
+            commentToUpdate.setCreatedAt(System.currentTimeMillis());
+            return mapper.toCommentDTO(commentRepository.save(commentToUpdate));
+        }
+        throw new UserNotAuthorizedException("У пользователя c id: " + getCurrentUser().getId() +
+                " недостаточно прав для редактирования комментария: " + commentId);
     }
 
     /**
      * Метод, который возвращает текущего пользователя
+     *
      * @return User
      * @see User
      */
@@ -100,6 +116,23 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new UserNotFoundException("User with email: " + email + " is not found"));
     }
 
+    /**
+     * Метод, который определяет, уполномочен ли текущий пользователь осуществлять определенные действия,
+     * такие как: редактирование и удаление комментария (пользователь вправе делать это
+     * в случае, если он является автором данного комментария либо имеет роль админ).
+     *
+     * @param commentId Id комментария
+     * @return true, если текущий пользователь - это автор комментария (или админ),
+     * false - если нет.
+     * @see Role
+     */
+    private boolean isCurrentUserAuthorized(int commentId) {
+        User currentUser = getCurrentUser();
+        User commentAuthor = commentRepository.findUserById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException("Комментарий с id: " + commentId + " не найден"));
+        return currentUser.equals(commentAuthor) || currentUser.getRole() == Role.ADMIN;
+    }
+
     private Comment findByCommentId(int commentId) {
         checkIfCommentExist(commentId);
         return commentRepository.findById(commentId).get();
@@ -107,7 +140,7 @@ public class CommentServiceImpl implements CommentService {
 
     private void checkIfCommentExist(int commentId) {
         if (!commentRepository.existsById(commentId)) {
-            throw new CommentNotFoundException("Комментария с id: " + commentId + " не существует");
+            throw new CommentNotFoundException("Комментарий с id: " + commentId + " не найден");
         }
     }
 }
