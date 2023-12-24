@@ -1,12 +1,20 @@
 package ru.skypro.homework.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.AdDTO;
+import ru.skypro.homework.dto.AdsDTO;
 import ru.skypro.homework.dto.CreateOrUpdateAdDTO;
 import ru.skypro.homework.entity.Ad;
+import ru.skypro.homework.entity.User;
+import ru.skypro.homework.exception.UserNotFoundException;
+import ru.skypro.homework.mapper.Mapper;
 import ru.skypro.homework.repository.AdRepository;
+import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AdService;
 
 import java.util.List;
@@ -18,6 +26,7 @@ import java.util.stream.Collectors;
 public class AdServiceImpl implements AdService {
 
     private final AdRepository adRepository;
+    private final UserRepository userRepository;
     private final Mapper mapper;
 
     @Override
@@ -62,15 +71,27 @@ public class AdServiceImpl implements AdService {
     }
 
     @Override
-    public List<AdDTO> getAdsByUser(int userId) {
-        return adRepository.findAllByUserId(userId).stream()
-                .map(mapper::toAdDTO)
-                .collect(Collectors.toList());
+    public AdsDTO getAdsByUser() {
+        User user = getCurrentUser();
+        return mapper.toAdsDTO(adRepository.findAllByUserId(user.getId()));
     }
 
     @Override
     public boolean updateAdImage(int id, MultipartFile image) {
         return false;
+    }
+
+    /**
+     * Метод, который возвращает текущего пользователя
+     *
+     * @return User
+     * @see User
+     */
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User with email: " + email + " is not found"));
     }
 }
 
