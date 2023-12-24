@@ -9,8 +9,9 @@ import ru.skypro.homework.service.UserService;
 import java.io.IOException;
 
 @RestController
-@RequestMapping(path = "/avatars")
+@CrossOrigin(value = "http://localhost:3000")
 @RequiredArgsConstructor
+@RequestMapping(path = "/avatars")
 public class AvatarController {
 
     private final UserService userService;
@@ -26,3 +27,4 @@ public class AvatarController {
         return ResponseEntity.ok().body(avatar);
     }
 }
+
