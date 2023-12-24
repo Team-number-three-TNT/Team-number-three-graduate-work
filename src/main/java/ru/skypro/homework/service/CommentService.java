@@ -4,10 +4,8 @@ import ru.skypro.homework.dto.CommentDTO;
 import ru.skypro.homework.dto.CommentsDTO;
 import ru.skypro.homework.dto.CreateOrUpdateCommentDTO;
 
-import java.util.List;
-
 public interface CommentService {
-    List<CommentsDTO> getCommentsForAd(int adId);
+    CommentsDTO getCommentsForAd(int adId);
 
     CommentDTO addCommentToAd(int adId, CreateOrUpdateCommentDTO createOrUpdateCommentDTO);
 

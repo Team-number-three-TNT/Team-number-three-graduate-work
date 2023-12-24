@@ -11,6 +11,7 @@ import ru.skypro.homework.service.CommentService;
 import java.util.List;
 
 @RestController
+@CrossOrigin(value = "http://localhost:3000")
 @RequiredArgsConstructor
 @RequestMapping("/ads")
 public class CommentController {
@@ -18,8 +19,8 @@ public class CommentController {
 
     @GetMapping("/{id}/comments")
     public ResponseEntity<?> getCommentsForAd(@PathVariable int id) {
-        List<CommentsDTO> results = commentService.getCommentsForAd(id);
-        if (results.isEmpty()) {
+        CommentsDTO results = commentService.getCommentsForAd(id);
+        if (results.getResults().isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(results);
