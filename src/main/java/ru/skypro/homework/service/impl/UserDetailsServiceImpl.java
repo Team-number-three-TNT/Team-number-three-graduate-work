@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import ru.skypro.homework.dto.UserPrincipalDTO;
 import ru.skypro.homework.entity.User;
 import ru.skypro.homework.entity.UserPrincipal;
+import ru.skypro.homework.exception.UserNotFoundException;
 import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.UserRepository;
 
@@ -17,11 +18,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username);
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с email: " + username + " не найден"));
         UserPrincipalDTO userDTO = userMapper.toUserPrincipalDTO(user);
-        if (userDTO == null) {
-            throw new UsernameNotFoundException(username);
-        }
         return new UserPrincipal(userDTO);
     }
 }

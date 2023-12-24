@@ -20,7 +20,7 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Override
     public boolean registerUser(RegisterDTO registerDTO) {
-        User foundUser = userRepository.findByEmail(registerDTO.getUsername());
+        User foundUser = userRepository.findByEmail(registerDTO.getUsername()).orElse(null);
         if (foundUser != null || !validateRegister(registerDTO)) {
             return false;
         }

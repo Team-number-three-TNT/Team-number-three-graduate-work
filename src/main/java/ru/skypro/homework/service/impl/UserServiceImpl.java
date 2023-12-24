@@ -11,9 +11,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.skypro.homework.dto.UpdateUserDTO;
 import ru.skypro.homework.dto.UserDTO;
+import ru.skypro.homework.entity.Image;
 import ru.skypro.homework.entity.User;
 import ru.skypro.homework.exception.UserAvatarProcessingException;
+import ru.skypro.homework.exception.UserHasNotImageException;
+import ru.skypro.homework.exception.UserNotFoundException;
 import ru.skypro.homework.mapper.UserMapper;
+import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.UserService;
 
@@ -31,11 +35,12 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder encoder;
     private final String fullAvatarPath;
+    private final ImageRepository imageRepository;
 
     public UserServiceImpl(final UserRepository userRepository,
                            final UserMapper userMapper,
                            final PasswordEncoder encoder,
-                           @Value("${path.to.avatars.folder}") String pathToAvatarsDir) {
+                           @Value("${path.to.avatars.folder}") String pathToAvatarsDir, ImageRepository imageRepository) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.encoder = encoder;
@@ -43,6 +48,7 @@ public class UserServiceImpl implements UserService {
                 .path(pathToAvatarsDir + "/")
                 .build()
                 .toUriString();
+        this.imageRepository = imageRepository;
     }
 
     @Override
@@ -51,6 +57,7 @@ public class UserServiceImpl implements UserService {
         UserDetails principalUser = (UserDetails) currentUser.getPrincipal();
         return userMapper.toDTO(
                 userRepository.findByEmail(principalUser.getUsername())
+                        .orElseThrow(() -> new UserNotFoundException("Пользователь с email: " + principalUser.getUsername() + " не найден"))
         );
     }
 
@@ -102,10 +109,16 @@ public class UserServiceImpl implements UserService {
                 Files.delete(path);
             }
 
+            Image oldImage = imageRepository.findByUserId(userDTO.getId())
+                    .orElseThrow(() -> new UserHasNotImageException("У пользователя с id: " + userDTO.getId() + " нет аватарки для обновления"));
+            oldImage.setFilePath(pathToAvatar.toString());
+            oldImage.setFileSize(file.getSize());
+            oldImage.setMediaType(file.getContentType());
+
             userRepository
                     .findById(userDTO.getId())
                     .map(user -> {
-                        user.setImage(fileName);
+                        user.setImage(oldImage);
                         return userMapper.toDTO(userRepository.save(user));
                     });
 
@@ -118,13 +131,15 @@ public class UserServiceImpl implements UserService {
 
     private void setNewPassword(final String email, final String password) {
         String encodedPassword = encoder.encode(password);
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с email: " + email + " не найден"));
         user.setPassword(encodedPassword);
         userRepository.save(user);
     }
 
     private boolean checkCurrentPassword(final String email, final String password) {
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с email: " + email + " не найден"));
         return encoder.matches(password, user.getPassword());
     }
 

@@ -7,19 +7,23 @@ import org.springframework.web.util.UriComponentsBuilder;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.dto.UserPrincipalDTO;
 import ru.skypro.homework.entity.User;
+import ru.skypro.homework.repository.ImageRepository;
 
 import java.util.Optional;
 
 @Component
 public class UserMapper {
 
+    private final ImageRepository imageRepository;
     private final String fullAvatarPath;
 
-    public UserMapper(@Value("${path.to.avatars.folder}") String pathToAvatarDir) {
+    public UserMapper(@Value("${path.to.avatars.folder}") String pathToAvatarDir,
+                      ImageRepository imageRepository) {
         this.fullAvatarPath = UriComponentsBuilder.newInstance()
                 .path("/" + pathToAvatarDir + "/")
                 .build()
                 .toUriString();
+        this.imageRepository = imageRepository;
     }
 
     public UserDTO toDTO(@NonNull User user) {
@@ -43,7 +47,7 @@ public class UserMapper {
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
         user.setEmail(userDTO.getEmail());
-        user.setImage(userDTO.getImage());
+        user.setImage(imageRepository.findByUserId(userDTO.getId()).orElse(null));
         user.setPhone(userDTO.getPhone());
         user.setRole(userDTO.getRole());
 
