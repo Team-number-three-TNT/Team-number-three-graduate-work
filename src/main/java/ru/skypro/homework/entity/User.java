@@ -42,11 +42,17 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    private String image;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Ad> ads = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
+
+    /**
+     * Аватар пользователя. Внешний ключ: Id картинки из таблицы 'images'
+     * @see Image
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "image_id", referencedColumnName = "id")
+    private Image image;
 }

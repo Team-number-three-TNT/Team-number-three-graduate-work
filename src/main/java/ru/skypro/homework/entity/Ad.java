@@ -22,12 +22,6 @@ public class Ad {
     private Integer id;
 
     @Column(nullable = false)
-    private Integer authorId;
-
-    @Column(length = 500)
-    private String image;
-
-    @Column(nullable = false)
     private Integer price;
 
     @Column(nullable = false, length = 100)
@@ -40,4 +34,11 @@ public class Ad {
     @OneToMany(mappedBy = "ad", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
 
+    /**
+     * Внешний ключ: Id картинки из таблицы 'images'
+     * @see Image
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "image_id", referencedColumnName = "id")
+    private Image image;
 }
