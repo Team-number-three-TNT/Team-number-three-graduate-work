@@ -19,7 +19,7 @@ public class UserDTO {
     private Role role;
 
     /**
-     * Ссылка на аватар пользователя
+     * GET запрос на получение аватара пользователя
      */
-    private String image;
+    private String avatarQuery;
 }

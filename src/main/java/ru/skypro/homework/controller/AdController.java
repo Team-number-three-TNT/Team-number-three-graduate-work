@@ -73,25 +73,8 @@ public class AdController {
         return ResponseEntity.ok(updatedAd);
     }
     @GetMapping("/me")
-    public ResponseEntity<AdsDTO> getMyAds(Authentication authentication) {
-        if (authentication == null) {
-            // если пользователь не авторизован, возвращаем статус 401
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        UserDTO user = (UserDTO) authentication.getPrincipal();
-        Integer userId = user.getId(); // Получаем ID пользователя из DTO
-
-        // сервис возвращает список объявлений для данного пользователя
-        List<AdDTO> userAds = adService.getAdsByUser(userId);
-
-        if (userAds.isEmpty()) {
-            // если объявлений нет, возвращаем пустой список с 200 OK
-            return ResponseEntity.ok(new AdsDTO(0, Collections.emptyList()));
-        }
-
-        // если объявления есть, возвращаем их вместе с их количеством
-        return ResponseEntity.ok(new AdsDTO(userAds.size(), userAds));
+    public ResponseEntity<AdsDTO> getMyAds() {
+        return ResponseEntity.ok(adService.getAdsByUser());
     }
 
     @PatchMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
