@@ -33,7 +33,6 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Password don`t match!");
         }
-
     }
 
     @GetMapping("/me")
@@ -52,10 +51,9 @@ public class UserController {
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
     )
     public ResponseEntity<byte[]> updateAvatar(@RequestParam MultipartFile image) throws IOException {
-        String fileName = userService.updateAvatar(image);
-        if (fileName != null) {
-            byte[] avatar = userService.getAvatar(fileName);
-            return ResponseEntity.ok().body(avatar);
+        byte[] updatedAvatar = userService.updateAvatar(image);
+        if (updatedAvatar.length != 0) {
+            return ResponseEntity.ok().body(updatedAvatar);
         } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

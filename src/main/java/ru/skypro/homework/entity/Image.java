@@ -32,7 +32,7 @@ public class Image {
     private Long fileSize;
 
     /**
-     * Поле, хранящее тип файла и расширение
+     * Поле, хранящее тип контента изображения
      */
     private String mediaType;
 

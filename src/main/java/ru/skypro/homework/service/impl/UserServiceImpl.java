@@ -1,5 +1,6 @@
 package ru.skypro.homework.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.core.Authentication;
@@ -8,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriComponentsBuilder;
 import ru.skypro.homework.dto.UpdateUserDTO;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.Image;
@@ -26,30 +26,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder encoder;
-    private final String fullAvatarPath;
     private final ImageRepository imageRepository;
 
-    public UserServiceImpl(final UserRepository userRepository,
-                           final UserMapper userMapper,
-                           final PasswordEncoder encoder,
-                           @Value("${path.to.avatars.folder}") String pathToAvatarsDir, ImageRepository imageRepository) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.encoder = encoder;
-        this.fullAvatarPath = UriComponentsBuilder.newInstance()
-                .path(pathToAvatarsDir + "/")
-                .build()
-                .toUriString();
-        this.imageRepository = imageRepository;
-    }
+    @Value("{path.to.avatars.folder}")
+    private String avatarsDir;
 
     @Override
     public UserDTO getAuthorizedUser() {
@@ -71,14 +59,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public byte[] getAvatar(final String fileName) throws IOException {
-        Path path = Path.of(fullAvatarPath, fileName);
-        return new ByteArrayResource(Files
-                .readAllBytes(path)
-        ).getByteArray();
-    }
-
-    @Override
     public UpdateUserDTO updateUser(final UpdateUserDTO updateUser) {
         UserDTO userDTO = this.getAuthorizedUser();
         userRepository
@@ -94,16 +74,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String updateAvatar(final MultipartFile file) {
+    public byte[] getAvatar(int avatarId) throws IOException {
+        Path path = Path.of(avatarsDir + ":" + avatarId);
+        return new ByteArrayResource(Files
+                .readAllBytes(path)
+        ).getByteArray();
+    }
+
+    /**
+     * Обновление аватара пользователя
+     *
+     * @param file переданный пользвателем файл
+     * @return обновленный аватар в массиве байтов
+     */
+    @Override
+    public byte[] updateAvatar(final MultipartFile file) {
         UserDTO userDTO = this.getAuthorizedUser();
         try {
-            String extension = getExtensions(Objects.requireNonNull(file.getOriginalFilename()));
+            String extension = getExtension(Objects.requireNonNull(file.getOriginalFilename()));
             byte[] data = file.getBytes();
-            String fileName = UUID.randomUUID() + "." + extension;
-            Path pathToAvatar = Path.of(fullAvatarPath, fileName);
+            Path pathToAvatar = Path.of(avatarsDir + ":" + getAuthorizedUser().getId() + "." + extension);
             writeToFile(pathToAvatar, data);
 
-            String avatar = userDTO.getImage();
+            String avatar = userMapper.toEntity(userDTO).getImage().getFilePath();
             if (avatar != null) {
                 Path path = Path.of(avatar.substring(1));
                 Files.delete(path);
@@ -122,7 +115,7 @@ public class UserServiceImpl implements UserService {
                         return userMapper.toDTO(userRepository.save(user));
                     });
 
-            return fileName;
+            return data;
         } catch (IOException e) {
             throw new UserAvatarProcessingException();
         }
@@ -143,7 +136,7 @@ public class UserServiceImpl implements UserService {
         return encoder.matches(password, user.getPassword());
     }
 
-    private String getExtensions(String fileName) {
+    private String getExtension(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
 
