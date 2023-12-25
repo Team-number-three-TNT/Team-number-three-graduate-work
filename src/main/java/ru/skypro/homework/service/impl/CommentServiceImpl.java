@@ -15,17 +15,19 @@ import ru.skypro.homework.exception.AdNotFoundException;
 import ru.skypro.homework.exception.CommentNotFoundException;
 import ru.skypro.homework.exception.UserNotAuthorizedException;
 import ru.skypro.homework.exception.UserNotFoundException;
-import ru.skypro.homework.mapper.Mapper;
+import ru.skypro.homework.mapper.CommentMapper;
 import ru.skypro.homework.repository.AdRepository;
 import ru.skypro.homework.repository.CommentRepository;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.CommentService;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
-    private final Mapper mapper;
+    private final CommentMapper mapper;
     private final CommentRepository commentRepository;
     private final AdRepository adRepository;
     private final UserRepository userRepository;
@@ -53,12 +55,12 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDTO addCommentToAd(int adId, CreateOrUpdateCommentDTO createOrUpdateCommentDTO) {
         Comment newComment = new Comment();
-        newComment.setCreatedAt(System.currentTimeMillis());
+        newComment.setCreatedAt(LocalDateTime.now());
         newComment.setText(createOrUpdateCommentDTO.getText());
         newComment.setAd(adRepository.findById(adId)
                 .orElseThrow(() -> new AdNotFoundException("Объявление с Id: " + adId + " не найдено")));
         newComment.setUser(getCurrentUser());
-        return mapper.toCommentDTO(commentRepository.save(newComment));
+        return mapper.toDto(commentRepository.save(newComment));
     }
 
     /**
@@ -96,8 +98,8 @@ public class CommentServiceImpl implements CommentService {
         if (isCurrentUserAuthorized(commentId)) {
             Comment commentToUpdate = findByCommentId(commentId);
             commentToUpdate.setText(createOrUpdateCommentDTO.getText());
-            commentToUpdate.setCreatedAt(System.currentTimeMillis());
-            return mapper.toCommentDTO(commentRepository.save(commentToUpdate));
+            commentToUpdate.setCreatedAt(LocalDateTime.now());
+            return mapper.toDto(commentRepository.save(commentToUpdate));
         }
         throw new UserNotAuthorizedException("У пользователя c id: " + getCurrentUser().getId() +
                 " недостаточно прав для редактирования комментария: " + commentId);

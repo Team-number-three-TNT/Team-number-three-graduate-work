@@ -4,11 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.dto.AdDTO;
+import ru.skypro.homework.dto.AdsDTO;
 import ru.skypro.homework.dto.CreateOrUpdateAdDTO;
 import ru.skypro.homework.dto.Role;
 import ru.skypro.homework.entity.Ad;
@@ -18,9 +23,13 @@ import ru.skypro.homework.exception.AdNotFoundException;
 import ru.skypro.homework.mapper.AdMapper;
 import ru.skypro.homework.repository.AdRepository;
 import ru.skypro.homework.repository.ImageRepository;
+import ru.skypro.homework.exception.UserNotFoundException;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AdService;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,9 +40,12 @@ import java.util.stream.Collectors;
 public class AdServiceImpl implements AdService {
 
     private final AdRepository adRepository;
-    private final AdMapper adMapper;
-    private final UserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(AdServiceImpl.class);
+    private final UserRepository userRepository;
+    private final AdMapper mapper;
+
+    @Value("{path.to.ad-images.folder}")
+    private String imagesDir;
 
     /**
      * Получает все объявления из репозитория.
@@ -114,11 +126,11 @@ public class AdServiceImpl implements AdService {
                 .map(adMapper::toDto)
                 .orElseThrow(() -> new AdNotFoundException("Ad not found with ID: " + id));
     }
+
     @Override
-    public List<AdDTO> getAdsByUser(int userId) {
-        return adRepository.findAllByUserId(userId).stream()
-                .map(adMapper::toDto)
-                .collect(Collectors.toList());
+    public AdsDTO getAdsByUser() {
+        User user = getCurrentUser();
+        return mapper.toAdsDto(adRepository.findAllByUserId(user.getId()));
     }
 
     @Override
@@ -142,6 +154,24 @@ public class AdServiceImpl implements AdService {
         }
     }
 
+    @Override
+    public byte[] getImage(int adId) throws IOException {
+        Path path = Path.of(imagesDir + ":" + adId);
+        return new ByteArrayResource(Files
+                .readAllBytes(path)
+        ).getByteArray();
+    }
+
+    /**
+     * Метод, который возвращает текущего пользователя
+     *
+     * @return User
+     * @see User
+     */
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User with email: " + email + " is not found"));
+    }
 }
-
-
