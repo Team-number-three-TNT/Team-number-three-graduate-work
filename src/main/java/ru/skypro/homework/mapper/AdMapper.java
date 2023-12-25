@@ -21,6 +21,7 @@ public class AdMapper {
         AdDTO adDTO = mapper.map(ad, AdDTO.class);
         adDTO.setPk(ad.getId());
         adDTO.setAuthor(ad.getUser() != null ? ad.getUser().getId() : null);
+        adDTO.setImageQuery("/images/imageId=" + ad.getId());
         return adDTO;
     }
 

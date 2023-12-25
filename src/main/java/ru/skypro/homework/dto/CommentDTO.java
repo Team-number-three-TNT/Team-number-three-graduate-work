@@ -6,13 +6,13 @@ import javax.validation.constraints.NotEmpty;
 
 @Data
 public class CommentDTO {
-    //authorId
+
     private Integer author;
 
     /**
      * GET запрос на получение аватара пользователя
      */
-    private String authorImage;
+    private String avatarQuery;
 
     private String authorFirstName;
 

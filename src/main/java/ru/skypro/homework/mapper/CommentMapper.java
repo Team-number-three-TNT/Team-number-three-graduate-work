@@ -18,9 +18,6 @@ public class CommentMapper {
 
     private final ModelMapper modelMapper;
 
-    @Value("{path.to.avatars.folder}")
-    private String avatarsDir;
-
     public CommentMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }
@@ -33,7 +30,7 @@ public class CommentMapper {
             commentDTO.setAuthor(user.getId());
             commentDTO.setAuthorFirstName(user.getFirstName());
             commentDTO.setCreatedAt(comment.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-            commentDTO.setAuthorImage(avatarsDir + ": " + user.getImage().getId());
+            commentDTO.setAvatarQuery("/images/avatarId=" + user.getId());
         }
         return commentDTO;
     }

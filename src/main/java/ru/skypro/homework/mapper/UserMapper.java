@@ -1,6 +1,7 @@
 package ru.skypro.homework.mapper;
 
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -12,19 +13,10 @@ import ru.skypro.homework.repository.ImageRepository;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class UserMapper {
 
     private final ImageRepository imageRepository;
-    private final String fullAvatarPath;
-
-    public UserMapper(@Value("${path.to.avatars.folder}") String pathToAvatarDir,
-                      ImageRepository imageRepository) {
-        this.fullAvatarPath = UriComponentsBuilder.newInstance()
-                .path("/" + pathToAvatarDir + "/")
-                .build()
-                .toUriString();
-        this.imageRepository = imageRepository;
-    }
 
     public UserDTO toDTO(@NonNull User user) {
         UserDTO userDTO = new UserDTO();
@@ -37,7 +29,7 @@ public class UserMapper {
         userDTO.setRole(user.getRole());
 
         Optional.ofNullable(user.getImage())
-                .ifPresent(elem -> userDTO.setImage(fullAvatarPath + user.getImage()));
+                .ifPresent(elem -> userDTO.setAvatarQuery("/images/avatarId=" + user.getId()));
         return userDTO;
     }
 
