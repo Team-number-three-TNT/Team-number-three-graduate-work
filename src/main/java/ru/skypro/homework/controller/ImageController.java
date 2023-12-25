@@ -18,24 +18,24 @@ public class ImageController {
     private final UserService userService;
     private final AdService adService;
 
-    @GetMapping(produces = {
+    @GetMapping(value = "/for-user/{userId}", produces = {
             MediaType.IMAGE_PNG_VALUE,
             MediaType.IMAGE_JPEG_VALUE,
             MediaType.IMAGE_GIF_VALUE,
             "image/*"
     })
-    public ResponseEntity<byte[]> getAvatar(@RequestParam int avatarId) throws IOException {
-        byte[] avatar = userService.getAvatar(avatarId);
+    public ResponseEntity<byte[]> getAvatar(@PathVariable int userId) throws IOException {
+        byte[] avatar = userService.getAvatar(userId);
         return ResponseEntity.ok().body(avatar);
     }
 
-    @GetMapping(produces = {
+    @GetMapping(value = "/for-ad/{adId}", produces = {
             MediaType.IMAGE_PNG_VALUE,
             MediaType.IMAGE_JPEG_VALUE,
             MediaType.IMAGE_GIF_VALUE,
             "image/*"
     })
-    public ResponseEntity<byte[]> getAdImage(@RequestParam int adId) throws IOException {
+    public ResponseEntity<byte[]> getAdImage(@PathVariable int adId) throws IOException {
         byte[] avatar = adService.getImage(adId);
         return ResponseEntity.ok().body(avatar);
     }

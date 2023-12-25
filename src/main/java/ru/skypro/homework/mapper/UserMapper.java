@@ -29,7 +29,7 @@ public class UserMapper {
         userDTO.setRole(user.getRole());
 
         Optional.ofNullable(user.getImage())
-                .ifPresent(elem -> userDTO.setAvatarQuery("/images/avatarId=" + user.getId()));
+                .ifPresent(elem -> userDTO.setAvatarQuery("/images/for-user/" + user.getId()));
         return userDTO;
     }
 

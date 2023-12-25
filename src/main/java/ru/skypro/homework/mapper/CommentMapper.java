@@ -30,7 +30,7 @@ public class CommentMapper {
             commentDTO.setAuthor(user.getId());
             commentDTO.setAuthorFirstName(user.getFirstName());
             commentDTO.setCreatedAt(comment.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-            commentDTO.setAvatarQuery("/images/avatarId=" + user.getId());
+            commentDTO.setAvatarQuery("/images/for-user/" + user.getId());
         }
         return commentDTO;
     }
