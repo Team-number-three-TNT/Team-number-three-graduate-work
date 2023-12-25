@@ -8,10 +8,22 @@ import javax.validation.constraints.NotEmpty;
 public class CommentDTO {
     //authorId
     private Integer author;
+
+    /**
+     * GET запрос на получение аватара пользователя
+     */
     private String authorImage;
+
     private String authorFirstName;
+
+    /**
+     * Дата и время создания комментария в миллисекундах с 00:00:00 01.01.1970
+     */
     private Long createdAt;
-    //id for comment
+
+    /**
+     * Id комментария
+     */
     private Integer pk;
 
     @NotEmpty
