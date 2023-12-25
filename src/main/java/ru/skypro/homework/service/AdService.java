@@ -5,6 +5,7 @@ import ru.skypro.homework.dto.AdDTO;
 import ru.skypro.homework.dto.AdsDTO;
 import ru.skypro.homework.dto.CreateOrUpdateAdDTO;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface AdService {
@@ -21,4 +22,6 @@ public interface AdService {
     AdsDTO getAdsByUser();
 
     boolean updateAdImage(int id, MultipartFile image);
+
+    byte[] getImage(int adId) throws IOException;
 }
