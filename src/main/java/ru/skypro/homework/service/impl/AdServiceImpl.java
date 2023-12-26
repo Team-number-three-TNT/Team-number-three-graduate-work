@@ -17,12 +17,10 @@ import ru.skypro.homework.dto.AdsDTO;
 import ru.skypro.homework.dto.CreateOrUpdateAdDTO;
 import ru.skypro.homework.dto.Role;
 import ru.skypro.homework.entity.Ad;
-import org.springframework.security.core.Authentication;
 import ru.skypro.homework.entity.User;
 import ru.skypro.homework.exception.AdNotFoundException;
 import ru.skypro.homework.mapper.AdMapper;
 import ru.skypro.homework.repository.AdRepository;
-import ru.skypro.homework.repository.ImageRepository;
 import ru.skypro.homework.exception.UserNotFoundException;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AdService;
@@ -55,7 +53,7 @@ public class AdServiceImpl implements AdService {
     @Override
     public List<AdDTO> getAllAds() {
         List<AdDTO> ads = adRepository.findAll().stream()
-                .map(adMapper::toDto)
+                .map(mapper::toDto)
                 .collect(Collectors.toList());
         logger.info("Fetched all ads, total count: {}", ads.size());
         return ads;
@@ -64,14 +62,15 @@ public class AdServiceImpl implements AdService {
      * Создает новое объявление.
      *
      * @param createOrUpdateAdDTO DTO для создания объявления.
+     * @param imageFile фотография предмета
      * @return созданное объявление.
      */
     @Override
-    public AdDTO createAd(CreateOrUpdateAdDTO createOrUpdateAdDTO) {
-        Ad ad = adMapper.toEntity(createOrUpdateAdDTO);
+    public AdDTO createAd(CreateOrUpdateAdDTO createOrUpdateAdDTO, MultipartFile imageFile) {
+        Ad ad = mapper.toEntity(createOrUpdateAdDTO);
         Ad savedAd = adRepository.save(ad);
         logger.info("Created a new ad with ID: {}", savedAd.getId());
-        return adMapper.toDto(savedAd);
+        return mapper.toDto(savedAd);
     }
     /**
      * Получает объявление по его идентификатору.
@@ -83,7 +82,7 @@ public class AdServiceImpl implements AdService {
     @Override
     public AdDTO getAdById(int id) {
         return adRepository.findById(id)
-                .map(adMapper::toDto)
+                .map(mapper::toDto)
                 .orElseThrow(() -> {
                     logger.error("Ad not found with ID: {}", id);
                     return new AdNotFoundException("Ad not found with ID: " + id);
@@ -93,7 +92,7 @@ public class AdServiceImpl implements AdService {
      * Удаляет объявление по идентификатору.
      *
      * @param id идентификатор объявления.
-     * @throws AdNotFoundException если объявление не найдено.
+     * @throws AdNotFoundException   если объявление не найдено.
      * @throws AccessDeniedException если пользователь не имеет права удалить объявление.
      */
     @Override
@@ -118,12 +117,12 @@ public class AdServiceImpl implements AdService {
         return adRepository.findById(id)
                 .map(ad -> {
                     checkPermission(ad.getUser().getId());
-                    Ad updatedAd = adMapper.toEntity(createOrUpdateAdDTO);
+                    Ad updatedAd = mapper.toEntity(createOrUpdateAdDTO);
                     updatedAd.setId(ad.getId());
                     updatedAd.setUser(ad.getUser());
                     return adRepository.save(updatedAd);
                 })
-                .map(adMapper::toDto)
+                .map(mapper::toDto)
                 .orElseThrow(() -> new AdNotFoundException("Ad not found with ID: " + id));
     }
 
@@ -148,7 +147,7 @@ public class AdServiceImpl implements AdService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = ((UserDetails) auth.getPrincipal()).getUsername();
         User currentUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + email));
         if (!currentUser.getId().equals(ownerId) && !currentUser.getRole().equals(Role.ADMIN)) {
             throw new AccessDeniedException("Access denied");
         }

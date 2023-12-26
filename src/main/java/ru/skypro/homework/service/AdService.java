@@ -11,11 +11,11 @@ import java.util.List;
 public interface AdService {
     List<AdDTO> getAllAds();
 
-    AdDTO createAd(CreateOrUpdateAdDTO createOrUpdateAdDTO);
+    AdDTO createAd(CreateOrUpdateAdDTO createOrUpdateAdDTO, MultipartFile imageFile);
 
     AdDTO getAdById(int id);
 
-    boolean deleteAd(int id);
+    void deleteAd(int id);
 
     AdDTO updateAd(int id, CreateOrUpdateAdDTO createOrUpdateAdDTO);
 

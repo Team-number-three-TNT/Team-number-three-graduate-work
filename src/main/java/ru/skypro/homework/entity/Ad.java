@@ -13,7 +13,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "ads")
+@Table(name = "ads", schema = "public")
 public class Ad {
 
     @Id
@@ -28,7 +28,7 @@ public class Ad {
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "author_id", nullable = false)
     private User user;
 
     @OneToMany(mappedBy = "ad", cascade = CascadeType.ALL, orphanRemoval = true)

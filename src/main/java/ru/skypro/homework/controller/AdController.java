@@ -36,9 +36,10 @@ public class AdController {
     }
 
     @PostMapping
-    public ResponseEntity<AdDTO> createAd(@RequestBody CreateOrUpdateAdDTO createOrUpdateAdDTO) {
+    public ResponseEntity<AdDTO> createAd(@RequestBody CreateOrUpdateAdDTO createOrUpdateAdDTO,
+                                          @RequestBody MultipartFile imageFile) {
         // добавление нового объявления
-        AdDTO ad = adService.createAd(createOrUpdateAdDTO);
+        AdDTO ad = adService.createAd(createOrUpdateAdDTO, imageFile);
         if (ad == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -57,10 +58,7 @@ public class AdController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAd(@PathVariable int id) {
-        boolean isDeleted = adService.deleteAd(id);
-        if (!isDeleted) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        adService.deleteAd(id);
         return ResponseEntity.ok().build();
     }
 

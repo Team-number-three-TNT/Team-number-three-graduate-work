@@ -15,7 +15,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "users")
+@Table(name = "users", schema = "public")
 public class User {
 
     @Id
