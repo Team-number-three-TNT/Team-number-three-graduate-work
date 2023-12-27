@@ -21,5 +21,5 @@ public class UserDTO {
     /**
      * GET запрос на получение аватара пользователя
      */
-    private String avatarQuery;
+    private String image;
 }

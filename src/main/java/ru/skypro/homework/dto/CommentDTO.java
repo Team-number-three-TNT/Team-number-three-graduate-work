@@ -12,7 +12,7 @@ public class CommentDTO {
     /**
      * GET запрос на получение аватара пользователя
      */
-    private String avatarQuery;
+    private String authorImage;
 
     private String authorFirstName;
 

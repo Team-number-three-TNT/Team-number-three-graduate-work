@@ -10,7 +10,7 @@ public class AdDTO {
     /**
      * GET запрос на получение фотографии объявления
      */
-    private String imageQuery;
+    private String image;
 
     /**
      * Id объявления

@@ -19,11 +19,7 @@ public class CommentController {
 
     @GetMapping("/{id}/comments")
     public ResponseEntity<?> getCommentsForAd(@PathVariable int id) {
-        CommentsDTO results = commentService.getCommentsForAd(id);
-        if (results.getResults().isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(results);
+        return ResponseEntity.ok(commentService.getCommentsForAd(id));
     }
 
     @PostMapping("/{id}/comments")

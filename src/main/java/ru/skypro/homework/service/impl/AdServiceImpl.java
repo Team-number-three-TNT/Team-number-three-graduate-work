@@ -3,33 +3,27 @@ package ru.skypro.homework.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import ru.skypro.homework.dto.AdDTO;
-import ru.skypro.homework.dto.AdsDTO;
-import ru.skypro.homework.dto.CreateOrUpdateAdDTO;
-import ru.skypro.homework.dto.Role;
+import ru.skypro.homework.dto.*;
 import ru.skypro.homework.entity.Ad;
+import ru.skypro.homework.entity.Image;
 import ru.skypro.homework.entity.User;
 import ru.skypro.homework.exception.AdNotFoundException;
+import ru.skypro.homework.exception.UserNotFoundException;
 import ru.skypro.homework.mapper.AdMapper;
 import ru.skypro.homework.repository.AdRepository;
-import ru.skypro.homework.exception.UserNotFoundException;
 import ru.skypro.homework.repository.UserRepository;
 import ru.skypro.homework.service.AdService;
+import ru.skypro.homework.service.ImageService;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -37,13 +31,11 @@ import java.util.stream.Collectors;
 @Transactional
 public class AdServiceImpl implements AdService {
 
-    private final AdRepository adRepository;
     private static final Logger logger = LoggerFactory.getLogger(AdServiceImpl.class);
+    private final AdRepository adRepository;
     private final UserRepository userRepository;
+    private final ImageService imageService;
     private final AdMapper mapper;
-
-    @Value("{path.to.ad-images.folder}")
-    private String imagesDir;
 
     /**
      * Получает все объявления из репозитория.
@@ -51,27 +43,33 @@ public class AdServiceImpl implements AdService {
      * @return список всех объявлений.
      */
     @Override
-    public List<AdDTO> getAllAds() {
-        List<AdDTO> ads = adRepository.findAll().stream()
-                .map(mapper::toDto)
-                .collect(Collectors.toList());
-        logger.info("Fetched all ads, total count: {}", ads.size());
-        return ads;
+    public AdsDTO getAllAds() {
+        AdsDTO adsDto = mapper.toAdsDto(adRepository.findAll());
+        logger.info("Fetched all ads, total count: {}", adsDto.getCount());
+        return adsDto;
     }
+
     /**
      * Создает новое объявление.
      *
      * @param createOrUpdateAdDTO DTO для создания объявления.
-     * @param imageFile фотография предмета
+     * @param imageFile           фотография предмета
      * @return созданное объявление.
      */
     @Override
-    public AdDTO createAd(CreateOrUpdateAdDTO createOrUpdateAdDTO, MultipartFile imageFile) {
+    public AdDTO createAd(CreateOrUpdateAdDTO createOrUpdateAdDTO, MultipartFile imageFile) throws IOException {
         Ad ad = mapper.toEntity(createOrUpdateAdDTO);
+        ad.setUser(getCurrentUser());
         Ad savedAd = adRepository.save(ad);
-        logger.info("Created a new ad with ID: {}", savedAd.getId());
+        Image image = imageService.saveImageExceptHolderField(imageFile);
+        image.setAd(savedAd);
+        imageService.saveImageToDb(image);
+        savedAd.setImage(image);
+        adRepository.save(savedAd);
+        logger.info("Created a new ad: {}, with corresponding image: {}", savedAd.getId(), image.getId());
         return mapper.toDto(savedAd);
     }
+
     /**
      * Получает объявление по его идентификатору.
      *
@@ -80,14 +78,15 @@ public class AdServiceImpl implements AdService {
      * @throws AdNotFoundException если объявление не найдено.
      */
     @Override
-    public AdDTO getAdById(int id) {
+    public ExtendedAdDTO getAdById(int id) {
         return adRepository.findById(id)
-                .map(mapper::toDto)
+                .map(mapper::toExtendedDto)
                 .orElseThrow(() -> {
                     logger.error("Ad not found with ID: {}", id);
                     return new AdNotFoundException("Ad not found with ID: " + id);
-                 });
+                });
     }
+
     /**
      * Удаляет объявление по идентификатору.
      *
@@ -106,24 +105,19 @@ public class AdServiceImpl implements AdService {
     /**
      * Обновляет существующее объявление.
      *
-     * @param id идентификатор объявления.
+     * @param id                  идентификатор объявления.
      * @param createOrUpdateAdDTO DTO для обновления объявления.
      * @return обновленное объявление.
-     * @throws AdNotFoundException если объявление не найдено.
+     * @throws AdNotFoundException   если объявление не найдено.
      * @throws AccessDeniedException если пользователь не имеет права обновить объявление.
      */
     @Override
     public AdDTO updateAd(int id, CreateOrUpdateAdDTO createOrUpdateAdDTO) {
-        return adRepository.findById(id)
-                .map(ad -> {
-                    checkPermission(ad.getUser().getId());
-                    Ad updatedAd = mapper.toEntity(createOrUpdateAdDTO);
-                    updatedAd.setId(ad.getId());
-                    updatedAd.setUser(ad.getUser());
-                    return adRepository.save(updatedAd);
-                })
-                .map(mapper::toDto)
-                .orElseThrow(() -> new AdNotFoundException("Ad not found with ID: " + id));
+        Ad ad = adRepository.findById(id).orElseThrow(() -> new AdNotFoundException("Ad not found with ID: " + id));
+        ad.setPrice(createOrUpdateAdDTO.getPrice());
+        ad.setDescription(createOrUpdateAdDTO.getDescription());
+        ad.setTitle(createOrUpdateAdDTO.getTitle());
+        return mapper.toDto(ad);
     }
 
     @Override
@@ -133,15 +127,16 @@ public class AdServiceImpl implements AdService {
     }
 
     @Override
-    public boolean updateAdImage(int adId, MultipartFile image) {
+    public void updateAdImage(int adId, MultipartFile imageFile) throws IOException {
+        imageService.updateImage(imageFile,
+                adRepository.findById(adId).orElseThrow(() -> new AdNotFoundException("Объявление: " + adId + " не найдено")).getId());
+    }
 
-            return false;
-        }
     /**
      * Проверяет, имеет ли текущий пользователь права для выполнения операции.
      *
      * @param ownerId идентификатор владельца объявления.
-     * @throws @AccessDeniedException если текущий пользователь не имеет прав.
+     * @throws AccessDeniedException если текущий пользователь не имеет прав.
      */
     private void checkPermission(Integer ownerId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -151,14 +146,6 @@ public class AdServiceImpl implements AdService {
         if (!currentUser.getId().equals(ownerId) && !currentUser.getRole().equals(Role.ADMIN)) {
             throw new AccessDeniedException("Access denied");
         }
-    }
-
-    @Override
-    public byte[] getImage(int adId) throws IOException {
-        Path path = Path.of(imagesDir + ":" + adId);
-        return new ByteArrayResource(Files
-                .readAllBytes(path)
-        ).getByteArray();
     }
 
     /**
