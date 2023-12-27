@@ -130,8 +130,9 @@ public class CommentServiceImpl implements CommentService {
      */
     private boolean isCurrentUserAuthorized(int commentId) {
         User currentUser = getCurrentUser();
-        User commentAuthor = commentRepository.findUserById(commentId)
-                .orElseThrow(() -> new CommentNotFoundException("Комментарий с id: " + commentId + " не найден"));
+        User commentAuthor = userRepository.findById(commentRepository.findAuthorIdById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException("Комментарий с id: " + commentId + " не найден")))
+                .orElseThrow(() -> new UserNotFoundException("Пользователь, написавший комментария с id: " + commentId + " не найден"));
         return currentUser.equals(commentAuthor) || currentUser.getRole() == Role.ADMIN;
     }
 
