@@ -3,8 +3,7 @@ package ru.skypro.homework.mapper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.*;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.stereotype.Component;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.dto.UserPrincipalDTO;
 import ru.skypro.homework.entity.User;
@@ -18,6 +17,9 @@ public class UserMapper {
 
     private final ImageRepository imageRepository;
 
+    @Value("${query.to.get.image}")
+    private String imageQuery;
+
     public UserDTO toDTO(@NonNull User user) {
         UserDTO userDTO = new UserDTO();
 
@@ -29,7 +31,7 @@ public class UserMapper {
         userDTO.setRole(user.getRole());
 
         Optional.ofNullable(user.getImage())
-                .ifPresent(elem -> userDTO.setAvatarQuery("/images/for-user/" + user.getId()));
+                .ifPresent(elem -> userDTO.setImage(imageQuery + user.getImage().getId()));
         return userDTO;
     }
 
