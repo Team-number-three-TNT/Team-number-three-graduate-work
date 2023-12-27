@@ -37,3 +37,7 @@ ALTER TABLE images
 -- changeset Rndmi:15.10
 ALTER TABLE images
     ALTER COLUMN ad_id DROP NOT NULL;
+
+-- changeset Rndmi:15.11
+ALTER TABLE images
+    ALTER COLUMN file_path DROP NOT NULL;
