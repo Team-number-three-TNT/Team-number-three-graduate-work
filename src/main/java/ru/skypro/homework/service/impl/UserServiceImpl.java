@@ -1,6 +1,7 @@
 package ru.skypro.homework.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.core.Authentication;
@@ -13,6 +14,7 @@ import ru.skypro.homework.dto.UpdateUserDTO;
 import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.Image;
 import ru.skypro.homework.entity.User;
+import ru.skypro.homework.exception.ImageIsTooBigException;
 import ru.skypro.homework.exception.UserAvatarProcessingException;
 import ru.skypro.homework.exception.UserHasNotImageException;
 import ru.skypro.homework.exception.UserNotFoundException;
@@ -28,6 +30,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
@@ -36,8 +39,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder encoder;
     private final ImageRepository imageRepository;
 
-    @Value("{path.to.avatars.folder}")
-    private String avatarsDir;
+    @Value("${path.to.images.folder}")
+    private String imagesDir;
 
     @Override
     public UserDTO getAuthorizedUser() {
@@ -75,7 +78,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public byte[] getAvatar(int avatarId) throws IOException {
-        Path path = Path.of(avatarsDir + ":" + avatarId);
+        Path path = Path.of(imagesDir + ":" + avatarId);
         return new ByteArrayResource(Files
                 .readAllBytes(path)
         ).getByteArray();
@@ -91,9 +94,14 @@ public class UserServiceImpl implements UserService {
     public byte[] updateAvatar(final MultipartFile file) {
         UserDTO userDTO = this.getAuthorizedUser();
         try {
+            if (file.getSize() > (1024 * 5000)) {
+                log.error("Размер переданного изображения слишком велик. Размер = {} MB", file.getSize() / 1024 / (double) 1000);
+                throw new ImageIsTooBigException("Размер изображения превышает максимально допустимое значение, равное 5 MB");
+            }
+
             String extension = getExtension(Objects.requireNonNull(file.getOriginalFilename()));
             byte[] data = file.getBytes();
-            Path pathToAvatar = Path.of(avatarsDir + ":" + getAuthorizedUser().getId() + "." + extension);
+            Path pathToAvatar = Path.of(imagesDir, "_" + getAuthorizedUser().getId() + "." + extension);
             writeToFile(pathToAvatar, data);
 
             String avatar = userMapper.toEntity(userDTO).getImage().getFilePath();
