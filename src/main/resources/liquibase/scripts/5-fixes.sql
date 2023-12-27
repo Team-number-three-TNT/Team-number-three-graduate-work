@@ -29,3 +29,11 @@ ALTER TABLE ads
 -- changeset Rndmi:15.8
 ALTER TABLE users
     RENAME COLUMN username TO email;
+
+-- changeset Rndmi:15.9
+ALTER TABLE images
+    ALTER COLUMN user_id DROP NOT NULL;
+
+-- changeset Rndmi:15.10
+ALTER TABLE images
+    ALTER COLUMN ad_id DROP NOT NULL;
