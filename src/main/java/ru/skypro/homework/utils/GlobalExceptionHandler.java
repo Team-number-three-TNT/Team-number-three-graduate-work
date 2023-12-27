@@ -40,4 +40,10 @@ public class GlobalExceptionHandler {
         log.warn(e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(ImageIsTooBigException.class)
+    public ResponseEntity<String> handleImageIsTooBigException(Exception e) {
+        log.warn(e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }
