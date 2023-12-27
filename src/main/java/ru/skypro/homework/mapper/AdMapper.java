@@ -2,6 +2,7 @@ package ru.skypro.homework.mapper;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.skypro.homework.dto.AdDTO;
 import ru.skypro.homework.dto.AdsDTO;
@@ -15,13 +16,18 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class AdMapper {
+
     private final ModelMapper mapper;
+
+    @Value("${query.to.get.image}")
+    private String imageQuery;
+
 
     public AdDTO toDto(Ad ad) {
         AdDTO adDTO = mapper.map(ad, AdDTO.class);
         adDTO.setPk(ad.getId());
         adDTO.setAuthor(ad.getUser() != null ? ad.getUser().getId() : null);
-        adDTO.setImageQuery("/images/for-ad/" + ad.getId());
+        adDTO.setImage(imageQuery + ad.getImage().getId());
         return adDTO;
     }
 
@@ -37,6 +43,7 @@ public class AdMapper {
             extendedAdDTO.setAuthorLastName(ad.getUser().getLastName());
             extendedAdDTO.setEmail(ad.getUser().getEmail());
             extendedAdDTO.setPhone(ad.getUser().getPhone());
+            extendedAdDTO.setImage(imageQuery + ad.getImage().getId());
         }
         return extendedAdDTO;
     }
