@@ -27,6 +27,9 @@ public class Ad {
     @Column(nullable = false, length = 100)
     private String title;
 
+    @Column(nullable = false)
+    private String description;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private User user;
@@ -38,7 +41,7 @@ public class Ad {
      * Внешний ключ: Id картинки из таблицы 'images'
      * @see Image
      */
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "image_id", referencedColumnName = "id")
     private Image image;
 }
