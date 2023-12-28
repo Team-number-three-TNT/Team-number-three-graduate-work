@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.skypro.homework.dto.CommentDTO;
 import ru.skypro.homework.dto.CommentsDTO;
-import ru.skypro.homework.dto.CreateOrUpdateCommentDTO;
 import ru.skypro.homework.entity.Comment;
 import ru.skypro.homework.entity.User;
 
@@ -34,10 +33,6 @@ public class CommentMapper {
             commentDTO.setAuthorImage(imageQuery + user.getImage().getId());
         }
         return commentDTO;
-    }
-
-    public Comment toEntity(CreateOrUpdateCommentDTO createOrUpdateCommentDTO) {
-        return mapper.map(createOrUpdateCommentDTO, Comment.class);
     }
 
     public CommentsDTO toCommentsDTO(List<Comment> comments) {
