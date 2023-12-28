@@ -13,4 +13,6 @@ public interface ImageService {
     Image saveImageToDb(Image image);
 
     byte[] getImage(int imageId) throws IOException;
+
+    boolean checkIfUserHasAvatar(int userId);
 }
