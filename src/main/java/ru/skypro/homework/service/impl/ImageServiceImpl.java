@@ -142,8 +142,7 @@ public class ImageServiceImpl implements ImageService {
      */
     private void checkImageSize(long imageSize) {
         if (imageSize > (1024 * 5000)) {
-            log.error("Размер переданного изображения слишком велик. Размер = {} MB", imageSize / 1024 / (double) 1000);
-            throw new ImageIsTooBigException("Размер изображения превышает максимально допустимое значение, равное 5 MB");
+            throw new ImageIsTooBigException("Размер изображения (" + (imageSize /1024 / (double) 1000) + " MB) превышает максимально допустимое значение, равное 5 MB");
         }
     }
 
