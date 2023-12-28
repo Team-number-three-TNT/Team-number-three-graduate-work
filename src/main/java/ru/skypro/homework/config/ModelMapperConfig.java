@@ -8,8 +8,10 @@ import org.springframework.context.annotation.Configuration;
 import ru.skypro.homework.dto.AdDTO;
 import ru.skypro.homework.dto.CommentDTO;
 import ru.skypro.homework.dto.ExtendedAdDTO;
+import ru.skypro.homework.dto.UserDTO;
 import ru.skypro.homework.entity.Ad;
 import ru.skypro.homework.entity.Comment;
+import ru.skypro.homework.entity.User;
 
 @Configuration
 public class ModelMapperConfig {
@@ -48,6 +50,20 @@ public class ModelMapperConfig {
                 skip(destination.getAuthor());
                 skip(destination.getAuthorFirstName());
                 skip(destination.getPk());
+            }
+        });
+        
+        modelMapper.addMappings(new PropertyMap<UserDTO, User>() {
+            @Override
+            protected void configure() {
+                skip(destination.getImage());
+            }
+        });
+
+        modelMapper.addMappings(new PropertyMap<User, UserDTO>() {
+            @Override
+            protected void configure() {
+                skip(destination.getImage());
             }
         });
         return modelMapper;

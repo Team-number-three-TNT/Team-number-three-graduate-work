@@ -7,7 +7,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.skypro.homework.entity.Image;
-import ru.skypro.homework.entity.User;
 import ru.skypro.homework.exception.ImageIsTooBigException;
 import ru.skypro.homework.exception.ImageNotFoundException;
 import ru.skypro.homework.repository.ImageRepository;
@@ -125,6 +124,17 @@ public class ImageServiceImpl implements ImageService {
     }
 
     /**
+     * Метод проверяет, есть ли у пользователя автар
+     *
+     * @param userId Id пользователя
+     * @return true - если у пользователя есть аватар, false - если нет
+     */
+    @Override
+    public boolean checkIfUserHasAvatar(int userId) {
+        return imageRepository.findByUserId(userId).isPresent();
+    }
+
+    /**
      * Проверка размера передаваемой фотографии
      *
      * @param imageSize размер в long
@@ -132,8 +142,7 @@ public class ImageServiceImpl implements ImageService {
      */
     private void checkImageSize(long imageSize) {
         if (imageSize > (1024 * 5000)) {
-            log.error("Размер переданного изображения слишком велик. Размер = {} MB", imageSize / 1024 / (double) 1000);
-            throw new ImageIsTooBigException("Размер изображения превышает максимально допустимое значение, равное 5 MB");
+            throw new ImageIsTooBigException("Размер изображения (" + (imageSize /1024 / (double) 1000) + " MB) превышает максимально допустимое значение, равное 5 MB");
         }
     }
 

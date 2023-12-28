@@ -14,7 +14,6 @@ public class AuthServiceImpl implements AuthService {
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder encoder;
 
-
     @Override
     public boolean login(String userName, String password) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
