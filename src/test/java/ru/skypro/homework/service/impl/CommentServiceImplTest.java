@@ -25,8 +25,7 @@ import ru.skypro.homework.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static ru.skypro.homework.utils.Constants.*;
@@ -72,9 +71,7 @@ class CommentServiceImplTest {
     @Test
     @DisplayName("'addCommentToAd' should return CommentDTO with 'text' field which is equal to given CreateOrUpdateComment DTO")
     void testAddCommentToAd() {
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-        when(authentication.getPrincipal()).thenReturn(getUserPrincipal());
+        setAuthentication();
         when(adRepository.findById(ID1)).thenReturn(Optional.of(getAd()));
         when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(getUser()));
         when(commentRepository.save(any(Comment.class))).thenReturn(getComment());
@@ -94,21 +91,24 @@ class CommentServiceImplTest {
                 .hasMessageContaining("Объявление с Id: " + ID1 + " не найдено");
     }
 
-//    @Test
-//    @DisplayName("'deleteComment' should been executed correctly if user is the author of comment")
-//    void deleteComment() {
-//        when(securityContext.getAuthentication()).thenReturn(authentication);
-//        SecurityContextHolder.setContext(securityContext);
-//        when(authentication.getPrincipal()).thenReturn(getUserPrincipal());
-//        when(userRepository.findById(ID1)).thenReturn(Optional.of(getUser()));
-//    }
+    @Test
+    @DisplayName("'deleteComment' should be executed correctly if current user is the author of comment")
+    void deleteComment() {
+        setAuthentication();
+        when(userRepository.findById(ID1)).thenReturn(Optional.of(getUser()));
+        when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(getUser()));
+        when(commentRepository.findAuthorIdById(ID1)).thenReturn(Optional.of(ID1));
+        when(userRepository.findById(ID1)).thenReturn(Optional.of(getUser()));
+        when(commentRepository.existsById(ID1)).thenReturn(true);
+        when(commentRepository.findById(ID1)).thenReturn(Optional.of(getComment()));
+        assertThatCode((() -> out.deleteComment(ID1, ID1)))
+                .doesNotThrowAnyException();
+    }
 
     @Test
     @DisplayName("'deleteComment' should throw CommentNotFoundException if DB does not contain the Comment of the given Id")
     void deleteComment_shouldThrow1() {
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-        when(authentication.getPrincipal()).thenReturn(getUserPrincipal());
+        setAuthentication();
         when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(getUser()));
         when(commentRepository.findAuthorIdById(ID1)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> out.deleteComment(ID1, ID1))
@@ -119,9 +119,7 @@ class CommentServiceImplTest {
     @Test
     @DisplayName("'deleteComment' should throw UserNotFoundException if DB does not contain the User of the given Id")
     void deleteComment_shouldThrow2() {
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-        when(authentication.getPrincipal()).thenReturn(getUserPrincipal());
+        setAuthentication();
         when(userRepository.findById(ID1)).thenReturn(Optional.empty());
         when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(getUser()));
         when(commentRepository.findAuthorIdById(ID1)).thenReturn(Optional.of(ID1));
@@ -132,23 +130,23 @@ class CommentServiceImplTest {
     }
 
     @Test
-    @DisplayName("'deleteComment' should throw UserNotAuthorizedException if User is not the author of the comment")
+    @DisplayName("'updateComment' should throw UserNotAuthorizedException if User is not the author of the comment")
     void deleteComment_shouldThrow3() {
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-        when(authentication.getPrincipal()).thenReturn(getUserPrincipal());
+        setAuthentication();
         when(userRepository.findById(ID1)).thenReturn(Optional.of(getUser()));
         when(userRepository.findByEmail(EMAIL)).thenReturn(Optional.of(getUser()));
         when(commentRepository.findAuthorIdById(ID1)).thenReturn(Optional.of(ID1));
         User commentAuthor = getUser();
         commentAuthor.setId(ID2);
         when(userRepository.findById(ID1)).thenReturn(Optional.of(commentAuthor));
-        assertThatThrownBy(() -> out.deleteComment(ID1, ID1))
+        assertThatThrownBy(() -> out.updateCommentText(ID1, ID1, new CreateOrUpdateCommentDTO()))
                 .isInstanceOf(UserNotAuthorizedException.class)
-                .hasMessageContaining("У пользователя c id: " + ID1 + " недостаточно прав для удаления комментария: " + ID1);
+                .hasMessageContaining("У пользователя c id: " + ID1 + " недостаточно прав для редактирования комментария: " + ID1);
     }
 
-    @Test
-    void updateCommentText() {
+    private void setAuthentication() {
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(authentication.getPrincipal()).thenReturn(getUserPrincipal());
     }
 }
