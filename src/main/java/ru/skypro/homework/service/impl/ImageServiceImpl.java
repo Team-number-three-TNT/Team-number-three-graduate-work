@@ -37,9 +37,6 @@ public class ImageServiceImpl implements ImageService {
      */
     @Override
     public Image saveImageExceptHolderField(MultipartFile imageFile) throws IOException {
-        long imageSize = imageFile.getSize();
-        checkImageSize(imageSize);
-
         Image image = new Image();
         image.setFileSize(imageFile.getSize());
         image.setMediaType(imageFile.getContentType());
@@ -72,8 +69,6 @@ public class ImageServiceImpl implements ImageService {
      */
     @Override
     public Image updateImage(MultipartFile imageFile, int holderId) throws IOException {
-        long imageSize = imageFile.getSize();
-        checkImageSize(imageSize);
         Image image;
 
         image = imageRepository.findByUserId(holderId).orElse(null);
@@ -132,18 +127,6 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public boolean checkIfUserHasAvatar(int userId) {
         return imageRepository.findByUserId(userId).isPresent();
-    }
-
-    /**
-     * Проверка размера передаваемой фотографии
-     *
-     * @param imageSize размер в long
-     * @throws ImageIsTooBigException если размер превышает 5MB
-     */
-    private void checkImageSize(long imageSize) {
-        if (imageSize > (1024 * 5000)) {
-            throw new ImageIsTooBigException("Размер изображения (" + (imageSize /1024 / (double) 1000) + " MB) превышает максимально допустимое значение, равное 5 MB");
-        }
     }
 
     private void saveImageFileToProject(MultipartFile imageFile, Image image) throws IOException {
